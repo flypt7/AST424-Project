@@ -142,7 +142,7 @@ if __name__ == "__main__":
             spl = None
         elif spl == "cst":
             spl = N
-            int(spl)
+            spl = int(spl)
 
     except:
         print(f"Incorrect value {spl}. Input must be positive non-zero integer.")
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         if seed == '':
             seed = 0
         else:    
-            int(seed)
+            seed = int(seed)
     except:
         print(f"Incorrect seed {seed}. Input must be non-negative integer.")       
 
