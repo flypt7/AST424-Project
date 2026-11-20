@@ -18,6 +18,7 @@ ROOT = os.path.dirname(currentdir)
 sys.path.insert(0, ROOT)
 
 import lsdb
+from nested_pandas import NestedFrame
 import numpy as np
 import pickle
 
@@ -46,7 +47,7 @@ def save_data_full(data, name):
     except:
         print(f"I/O calls failed for {name} full saving.")
 
-def load_data(path):
+def load_data(path) -> NestedFrame:
     """
     Return the object stored in the file with the corresponding path.
     If the file does not exist, return None.
@@ -142,7 +143,7 @@ if __name__ == "__main__":
             spl = None
         elif spl == "cst":
             spl = N
-            int(spl)
+            spl = int(spl)
 
     except:
         print(f"Incorrect value {spl}. Input must be positive non-zero integer.")
@@ -152,7 +153,7 @@ if __name__ == "__main__":
         if seed == '':
             seed = 0
         else:    
-            int(seed)
+            seed = int(seed)
     except:
         print(f"Incorrect seed {seed}. Input must be non-negative integer.")       
 
