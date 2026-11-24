@@ -22,13 +22,14 @@ from scipy.stats import norm
 from scipy.optimize import curve_fit
 
 from data.data_ops import load_data
+from misc.filters import *
 
 
-def clean_lightcurve(lc, band=None):
+def clean_lightcurve(lc, z, band=None):
     """
     Cleaned up lightcurve data from lc in the specified band in-place.
     Cleaning up involves the removal of any non-existent and infinite values,
-    and any non-positive errors.
+    and any non-positive errors. Also accounts for redshift z.
     """
     if band is None:
         lc = lc[(lc["time"] > 0) & np.isfinite(lc["time"]) &
@@ -39,20 +40,11 @@ def clean_lightcurve(lc, band=None):
                 np.isfinite(lc["flux"]) & np.isfinite(lc["flux_err"]) &
                 (lc["flux_err"] > 0) & (lc["band"] == band)]
 
+    # account for redshift
+    time_ratio = 1 / (1 + z)
+    lc["time"] = lc["time"].apply(lambda x: x * time_ratio)
+
     return lc.sort_values("time")
-
-
-# TODO: this can be done just at the end, once the rise time is found!
-# i.e. no need to multiply the entire lightcurve
-def redshift(lc, z):
-    """
-    Shift lightcurve lc times according to the redshift z in-place.
-    """
-    lc = lc.copy()
-    time_ratio = 1 / (1 + z) # multiply by dt_obs to get dt_emit
-
-    for i in range(len(lc["time"])):
-        lc["time"][i] *= time_ratio
 
 
 def centroid(peak, around, mags):
@@ -79,21 +71,32 @@ def main():
     Returns the 3-ple on success, None with an error message on failure.
     """
     # load lightcurve data
-    ia, iax = load_data(f"{ROOT}/data/Ia_z0.2_8000.pkl"), load_data(f"{ROOT}/data/Iax_z0.2_8000.pkl")
+    ia = load_data(f"{ROOT}/data/Ia_z0.2_s0_8000.pkl")
+    print("SNe-Ia dataset loaded with 8000 samples.")
+
+    iax = load_data(f"{ROOT}/data/Iax_z0.2_s0_8000.pkl")
+    print("SNe-Iax dataset loaded with 8000 samples.")
 
     # initialize dicts for SNe-Ia and SNe-Iax (obj_id: lightcurve)
     clean_ia, clean_iax = dict(), dict()
 
-    # remove garbage data, order lightcurve in time
-    ia.map_rows(clean_lightcurve, "lightcurve")
-    iax.map_rows(clean_lightcurve, "lightcurve")
+    # remove garbage data, order lightcurve in time, redshift-correct time values
+    print("Cleaning up data...")
+
+    for row in ia.iterrows():
+        clean_ia[row[0]] = clean_lightcurve(row[1]["lightcurve"], row[1]["redshift"], band=BAND)
+    print(f"SNe-Ia lightcurves cleaned up. {len(clean_ia)} SNe-Ia returned data.")
+
+    for row in iax.iterrows():
+        clean_iax[row[0]] = clean_lightcurve(row[1]["lightcurve"], row[1]["redshift"], band=BAND)
+    print(f"SNe-Iax lightcurves cleaned up. {len(clean_iax)} SNe-Iax returned data.")
 
 
 # TODO:
-#   1. redshift correction                          to implement
-#   2. filter data                                  to implement; min number of points before peak?
+#   1. redshift correction                          done
+#   2. filter data                                  min number of points before peak?
 #   3. peak centroid location                       implemented, to apply
-#   4. zero location (Gaussian/polyfit)             curve_fit(norm) and polyfit, check lowest residuals, value threshold
+#   4. zero location (Gaussian/polyfit)             curve_fit(norm), value threshold
 #                                                           -> do different fits work better for SNIa vs SNIax? check covariance matrix
 #   5. time difference between the two              simple subtraction
 #   6. boom, send back the full thing               some data storage, done in main function
