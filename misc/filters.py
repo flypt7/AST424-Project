@@ -14,6 +14,7 @@ by all feature detection notebooks.
 N = 8000        # Sample count
 Z_MAX = 0.2
 BAND = "z"
+ZERO_POINT = 27.5
 
 ##########
 # SECOND PEAK DETECTION
