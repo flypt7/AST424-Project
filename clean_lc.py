@@ -23,9 +23,6 @@ from scipy.optimize import curve_fit
 from data.data_ops import load_data
 from misc.filters import *
 
-SPL_CT = 1000 # sample count, should be a number in the .pkl filenames.
-
-
 def clean_lightcurve(lc, band=None):
     """
     Cleaned up lightcurve data from lc in the specified band in-place.
@@ -64,19 +61,21 @@ def centroid(peak, around, mags):
     return val/value_sum
 
 
-def main():
+def main(spl_ct):
     """
     Main function. Uses all other functions to turn NestedFrame lightcurve data
     into two dictionaries of object_id: (lightcurve, redshift) pairs in a tuple.
+    spl_ct must be a number of samples specified in the filename of at least one
+    .pkl file for both SNe-Ia and SNe-Iax.
     Returns the dictionaries on success, None with an error message on failure.
     """
     try:
         # load lightcurve data
-        ia = load_data(f"{ROOT}/data/Ia_z0.2_s0_{SPL_CT}.pkl")
-        print(f"SNe-Ia dataset loaded with {SPL_CT} samples.")
+        ia = load_data(f"{ROOT}/data/Ia_z0.2_s0_{spl_ct}.pkl")
+        print(f"SNe-Ia dataset loaded with {spl_ct} samples.")
 
-        iax = load_data(f"{ROOT}/data/Iax_z0.2_s0_{SPL_CT}.pkl")
-        print(f"SNe-Iax dataset loaded with {SPL_CT} samples.")
+        iax = load_data(f"{ROOT}/data/Iax_z0.2_s0_{spl_ct}.pkl")
+        print(f"SNe-Iax dataset loaded with {spl_ct} samples.")
 
         # initialize dicts for SNe-Ia and SNe-Iax (obj_id: lightcurve)
         clean_ia, clean_iax = dict(), dict()
@@ -112,4 +111,4 @@ def main():
 #   6. boom, send back the full thing               some data storage, done in main function
 
 if __name__ == "__main__":
-    main()
+    main(8000)
