@@ -72,13 +72,17 @@ def main():
     param_ticks = [5, 0.05, 0.001, 0.2]
 
     fig, axs = plt.subplots(len(params), 1)
-    plt.subplots_adjust(hspace=0.4)
+    plt.subplots_adjust(top=5, bottom=0.1, left=0.1, right=0.9, hspace=0.4)
 
     plt.title(f"SALT2 Properties [\chi^2 < 50]")
 
     for i in range(len(params)):
         lo = np.round(np.min([ia_chi2[sn][i] for sn in ia_chi2]), 1) - 0.5
         hi = np.round(np.max([ia_chi2[sn][i] for sn in ia_chi2]), 1) + 0.5
+        
+        if params[i] == "x0":
+            lo += 0.4
+            hi -= 0.4
 
         axs[i].hist([ia_chi2[sn][i] for sn in ia_chi2], bins=np.arange(lo, hi, param_ticks[i]), color="#785EF0", label=f"SNe-Ia ({len(ia_chi2)} objects)", alpha=0.5)
         axs[i].hist([iax_chi2[sn][i] for sn in iax_chi2], bins=np.arange(lo, hi, param_ticks[i]), color="#FE6100", label=f"SNe-Iax ({len(iax_chi2)} objects)", alpha=0.5)
@@ -91,7 +95,7 @@ def main():
         axs[i].set_xlabel(params[i].capitalize(), fontsize=18)
         axs[i].tick_params(labelsize=16)
 
-    plt.show()
+    plt.savefig("salt2_params2.png")
 
 
 if __name__ == "__main__":
